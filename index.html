@@ -3,65 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avansert Poker Odds Kalkulator</title>
+    <title>Nøyaktig Poker Odds Kalkulator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Poker Odds Kalkulator</h1>
+        <h1>Nøyaktig Poker Odds Kalkulator</h1>
 
         <div id="status-message" class="status">Velg dine kort eller trykk "Del ut Tilfeldig".</div>
 
-        <div class="controls">
-             <button id="deal-random">Del ut Tilfeldig</button>
+        <div class="controls main-controls">
+             <button id="deal-random-hole">Del Tilfeldige Hole Cards</button>
              <button id="reset-all">Nullstill Alt</button>
         </div>
 
         <div class="game-area">
             <!-- Player Hand Area -->
-            <div class="player-area">
+            <div class="player-area section">
                 <h2>Dine Kort (Hole Cards)</h2>
                 <div class="card-selection">
-                    <div class="card-placeholder" id="ph-card1">
-                         <span class="card-text">Kort 1</span>
-                         <select id="rank1"></select><select id="suit1"></select>
+                    <div class="card-container">
+                        <div class="card-placeholder" id="ph-card1">Kort 1</div>
+                        <div class="manual-input">
+                            <select id="rank1"></select><select id="suit1"></select>
+                        </div>
                     </div>
-                    <div class="card-placeholder" id="ph-card2">
-                        <span class="card-text">Kort 2</span>
-                        <select id="rank2"></select><select id="suit2"></select>
+                    <div class="card-container">
+                        <div class="card-placeholder" id="ph-card2">Kort 2</div>
+                         <div class="manual-input">
+                            <select id="rank2"></select><select id="suit2"></select>
+                         </div>
                     </div>
                 </div>
-                 <button id="confirm-holecards" class="confirm-button">Bekreft Hole Cards</button>
+                 <button id="confirm-holecards" class="confirm-button">Bekreft/Lås Hole Cards</button>
             </div>
 
             <!-- Community Card Area -->
-            <div class="community-area">
+            <div class="community-area section">
                 <h2>Felleskort</h2>
-                <div class="card-selection">
-                    <div class="card-placeholder" id="flop1">Flop 1</div>
-                    <div class="card-placeholder" id="flop2">Flop 2</div>
-                    <div class="card-placeholder" id="flop3">Flop 3</div>
-                    <div class="card-placeholder" id="turn">Turn</div>
-                    <div class="card-placeholder" id="river">River</div>
+                <div class="card-selection community-cards-layout">
+                    <!-- Flop -->
+                    <div class="card-stage">
+                        <h3>Flop</h3>
+                        <div class="card-container">
+                            <div class="card-placeholder" id="flop1">Flop 1</div>
+                            <div class="manual-input">
+                                <select id="rankF1"></select><select id="suitF1"></select>
+                            </div>
+                        </div>
+                        <div class="card-container">
+                            <div class="card-placeholder" id="flop2">Flop 2</div>
+                             <div class="manual-input">
+                                <select id="rankF2"></select><select id="suitF2"></select>
+                             </div>
+                        </div>
+                        <div class="card-container">
+                            <div class="card-placeholder" id="flop3">Flop 3</div>
+                             <div class="manual-input">
+                                <select id="rankF3"></select><select id="suitF3"></select>
+                            </div>
+                        </div>
+                         <button id="deal-flop" class="deal-button hidden">Bekreft Flop / Del Tilfeldig</button>
+                    </div>
+                    <!-- Turn -->
+                     <div class="card-stage">
+                        <h3>Turn</h3>
+                        <div class="card-container">
+                            <div class="card-placeholder" id="turn">Turn</div>
+                             <div class="manual-input">
+                                <select id="rankT"></select><select id="suitT"></select>
+                             </div>
+                        </div>
+                         <button id="deal-turn" class="deal-button hidden">Bekreft Turn / Del Tilfeldig</button>
+                    </div>
+                    <!-- River -->
+                     <div class="card-stage">
+                        <h3>River</h3>
+                        <div class="card-container">
+                            <div class="card-placeholder" id="river">River</div>
+                             <div class="manual-input">
+                                <select id="rankR"></select><select id="suitR"></select>
+                            </div>
+                        </div>
+                         <button id="deal-river" class="deal-button hidden">Bekreft River / Del Tilfeldig</button>
+                    </div>
                 </div>
-                 <div class="community-controls">
-                    <select id="rankF1" class="hidden"></select><select id="suitF1" class="hidden"></select>
-                    <select id="rankF2" class="hidden"></select><select id="suitF2" class="hidden"></select>
-                    <select id="rankF3" class="hidden"></select><select id="suitF3" class="hidden"></select>
-                    <select id="rankT" class="hidden"></select><select id="suitT" class="hidden"></select>
-                    <select id="rankR" class="hidden"></select><select id="suitR" class="hidden"></select>
-                    <button id="deal-flop" class="hidden deal-button">Del Flop</button>
-                    <button id="deal-turn" class="hidden deal-button">Del Turn</button>
-                    <button id="deal-river" class="hidden deal-button">Del River</button>
-                 </div>
             </div>
         </div>
 
         <!-- Results Area -->
-        <div id="results-area" class="results-area hidden">
-            <h2>Sannsynligheter <span id="results-stage"></span></h2>
-            <div id="current-hand-rank"></div>
-            <div id="probabilities">Laster odds...</div>
+        <div id="results-area" class="results-area section hidden">
+            <h2>Resultater <span id="results-stage"></span></h2>
+            <div id="current-hand-rank" class="current-hand"></div>
+            <h3>Sannsynligheter ved River</h3>
+            <div id="probabilities"></div>
             <div id="explanation"></div>
         </div>
     </div>
