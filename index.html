@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Odds Kalkulator</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: auto;
+        }
+        h1, h2 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .card-selector {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .card-selector label {
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        select, button {
+            padding: 8px 12px;
+            margin: 0 5px 5px 0; /* Added bottom margin */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results, .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .results {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d7ff;
+        }
+         .results p {
+            margin: 5px 0;
+            font-size: 1.1em;
+        }
+        .explanation {
+            background-color: #f0f0f0;
+            border: 1px solid #dcdcdc;
+            font-size: 0.9em;
+        }
+        .explanation code {
+            background-color: #e4e4e4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        #status-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Poker Odds Kalkulator</h1>
+    <div id="status-message"></div>
+
+    <!-- Hole Card Selection -->
+    <h2>Velg dine Hole Cards</h2>
+    <div class="card-selector">
+        <label for="rank1">Kort 1:</label>
+        <select id="rank1"></select>
+        <select id="suit1"></select>
+
+        <label for="rank2">Kort 2:</label>
+        <select id="rank2"></select>
+        <select id="suit2"></select>
+        <button id="calculate-preflop">Beregn Pre-flop</button>
+    </div>
+
+    <!-- Pre-flop Results -->
+    <div id="preflop-results" class="hidden">
+        <h2>Pre-flop Sannsynligheter</h2>
+        <div class="results" id="preflop-probabilities"></div>
+        <div class="explanation" id="preflop-explanation"></div>
+    </div>
+
+    <!-- Flop Selection -->
+    <div id="flop-selector" class="card-selector hidden">
+        <h2>Velg Flop</h2>
+        <label for="rankF1">Kort 3:</label>
+        <select id="rankF1"></select>
+        <select id="suitF1"></select>
+
+        <label for="rankF2">Kort 4:</label>
+        <select id="rankF2"></select>
+        <select id="suitF2"></select>
+
+        <label for="rankF3">Kort 5:</label>
+        <select id="rankF3"></select>
+        <select id="suitF3"></select>
+        <button id="calculate-postflop">Beregn Post-flop</button>
+    </div>
+
+    <!-- Post-flop Results -->
+    <div id="postflop-results" class="hidden">
+        <h2>Post-flop Sannsynligheter (til River)</h2>
+        <div class="results" id="postflop-probabilities"></div>
+        <div class="explanation" id="postflop-explanation"></div>
+    </div>
+
+</div>
+
+<script>
+    const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+    const suits = { 's': 'Spar ♠', 'h': 'Hjerter ♥', 'd': 'Ruter ♦', 'c': 'Kløver ♣' };
+    const suitChars = Object.keys(suits); // ['s', 'h', 'd', 'c']
+
+    // --- Helper Functions ---
+    function populateSelect(selectId, optionsArray, optionTexts = null) {
+        const select = document.getElementById(selectId);
+        select.innerHTML = ''; // Clear existing options
+        optionsArray.forEach((option, index) => {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.textContent = optionTexts ? optionTexts[option] : option;
+            select.appendChild(opt);
+        });
+    }
+
+    function formatPercentage(decimal) {
+        return (decimal * 100).toFixed(1) + '%';
+    }
+
+    function factorial(n) {
+        if (n < 0) return 0; // Factorial is not defined for negative numbers
+        if (n === 0 || n === 1) return 1;
+        let result = 1;
+        for (let i = n; i > 1; i--) {
+            result *= i;
+        }
+        return result;
+    }
+
+    function combinations(n, k) {
+        if (k < 0 || k > n) {
+            return 0;
+        }
+        if (k === 0 || k === n) {
+            return 1;
+        }
+        // For numerical stability, calculate C(n, k) = C(n, n-k) if k > n/2
+        if (k > n / 2) {
+            k = n - k;
+        }
+        // Use the formula n! / (k! * (n-k)!)
+        // To avoid large intermediate numbers, calculate as (n * (n-1) * ... * (n-k+1)) / k!
+        let res = 1;
+        for (let i = 1; i <= k; ++i) {
+            res = res * (n - i + 1) / i;
+        }
+        return Math.round(res); // Round due to potential floating point inaccuracies
+    }
+
+     function getSelectedCards() {
+        const cards = [];
+        const selectors = [
+            ['rank1', 'suit1'], ['rank2', 'suit2'],
+            ['rankF1', 'suitF1'], ['rankF2', 'suitF2'], ['rankF3', 'suitF3']
+        ];
+        selectors.forEach(([rankId, suitId]) => {
+            const rankEl = document.getElementById(rankId);
+            const suitEl = document.getElementById(suitId);
+            if (rankEl && suitEl && rankEl.value && suitEl.value) { // Check if elements and values exist
+                 // Only add card if both rank and suit selectors are present and have values
+                 if (document.getElementById(rankId).offsetParent !== null) { // Check if visible/part of layout
+                    cards.push(rankEl.value + suitEl.value);
+                 }
+            }
+        });
+        return cards;
+    }
+
+    function validateUniqueCards(cards) {
+        const statusDiv = document.getElementById('status-message');
+        const seen = new Set();
+        for (const card of cards) {
+            if (seen.has(card)) {
+                statusDiv.textContent = `Feil: Kortet ${card} er valgt mer enn én gang!`;
+                return false;
+            }
+            seen.add(card);
+        }
+        statusDiv.textContent = ''; // Clear error message
+        return true;
+    }
+
+    function getSuitName(suitChar) {
+        return suits[suitChar] || suitChar;
+    }
+
+
+    // --- Calculation Logic ---
+
+    function calculatePreflop(card1, card2) {
+        const results = {};
+        const explanations = [];
+        const rank1 = card1.substring(0, 1);
+        const suit1 = card1.substring(1, 2);
+        const rank2 = card2.substring(0, 1);
+        const suit2 = card2.substring(1, 2);
+
+        // Example: Chance of Flush with Suited Cards
+        if (suit1 === suit2) {
+            const targetSuit = suit1;
+            const knownCards = 2;
+            const unknownCards = 50;
+            const cardsToCome = 5;
+            const outsSuit = 11; // 13 total - 2 known
+            const nonOutsSuit = 39; // 50 unknown - 11 outs
+
+            const totalCombos = combinations(unknownCards, cardsToCome); // C(50, 5)
+            const flush3 = combinations(outsSuit, 3) * combinations(nonOutsSuit, 2); // C(11, 3) * C(39, 2)
+            const flush4 = combinations(outsSuit, 4) * combinations(nonOutsSuit, 1); // C(11, 4) * C(39, 1)
+            const flush5 = combinations(outsSuit, 5) * combinations(nonOutsSuit, 0); // C(11, 5) * C(39, 0)
+            const totalFlushCombos = flush3 + flush4 + flush5;
+            const probability = totalFlushCombos / totalCombos;
+
+            results.flush = probability;
+            explanations.push(`
+                <p><strong>Sjanse for Flush (med ${getSuitName(suit1)}): ${formatPercentage(probability)}</strong></p>
+                <p>Du har to ${getSuitName(suit1)}. Det er 11 ${getSuitName(suit1)} igjen blant de 50 ukjente kortene.</p>
+                <p>De neste 5 felleskortene må inneholde minst 3 av disse 11 ${getSuitName(suit1)}.</p>
+                <p>Totalt antall mulige kombinasjoner av 5 felleskort fra 50 ukjente: C(50, 5) = ${totalCombos.toLocaleString()}.</p>
+                <p>Antall måter å få 3 ${getSuitName(suit1)} (og 2 andre): C(11, 3) * C(39, 2) = ${combinations(outsSuit, 3)} * ${combinations(nonOutsSuit, 2)} = ${flush3.toLocaleString()}.</p>
+                <p>Antall måter å få 4 ${getSuitName(suit1)} (og 1 annet): C(11, 4) * C(39, 1) = ${combinations(outsSuit, 4)} * ${combinations(nonOutsSuit, 1)} = ${flush4.toLocaleString()}.</p>
+                <p>Antall måter å få 5 ${getSuitName(suit1)} (og 0 andre): C(11, 5) * C(39, 0) = ${combinations(outsSuit, 5)} * ${combinations(nonOutsSuit, 0)} = ${flush5.toLocaleString()}.</p>
+                <p>Totalt gunstige utfall: ${totalFlushCombos.toLocaleString()}.</p>
+                <p>Sannsynlighet = Gunstige / Totalt = ${totalFlushCombos.toLocaleString()} / ${totalCombos.toLocaleString()} ≈ ${formatPercentage(probability)}.</p>
+            `);
+        } else {
+             explanations.push(`
+                <p>Dine kort (${card1}, ${card2}) er ikke suited. Pre-flop flush-sjanse er svært lav uten suited kort (krever 5 felleskort i samme farge).</p>
+             `);
+        }
+
+        // TODO: Add more pre-flop calculations (pair chance, set chance etc.)
+
+        return { probabilities: results, explanationHTML: explanations.join('') };
+    }
+
+
+    function calculatePostflop(holeCards, flopCards) {
+        const results = {};
+        const explanations = [];
+        const knownCards = [...holeCards, ...flopCards];
+
+        // Count suits among known cards
+        const suitCounts = {};
+        suitChars.forEach(s => suitCounts[s] = 0);
+        knownCards.forEach(card => {
+            const suit = card.substring(1, 2);
+            suitCounts[suit]++;
+        });
+
+        // Check for Flush Draw
+        let flushDrawSuit = null;
+        for (const suit in suitCounts) {
+            if (suitCounts[suit] === 4) {
+                flushDrawSuit = suit;
+                break;
+            }
+        }
+
+        if (flushDrawSuit) {
+            const unknownCardsTotal = 52 - 5; // 47
+            const outs = 13 - 4; // 9 outs for the flush
+            const nonOuts = unknownCardsTotal - outs; // 47 - 9 = 38
+
+            // Probability of hitting on Turn OR River (simpler method: 1 - P(miss, miss))
+            const probMissTurn = nonOuts / unknownCardsTotal; // 38 / 47
+            const probMissRiver = (nonOuts - 1) / (unknownCardsTotal - 1); // 37 / 46
+            const probMissBoth = probMissTurn * probMissRiver;
+            const probHitFlush = 1 - probMissBoth;
+
+            results.flush = probHitFlush;
+            explanations.push(`
+                <p><strong>Sjanse for å fullføre ${getSuitName(flushDrawSuit)} Flush: ${formatPercentage(probHitFlush)}</strong></p>
+                <p>Du har 4 ${getSuitName(flushDrawSuit)} etter floppen. Dette er et "Flush Draw".</p>
+                <p>Det er ${outs} kort (${getSuitName(flushDrawSuit)}) igjen i stokken som fullfører flushen din ("outs").</p>
+                <p>Det er ${unknownCardsTotal} ukjente kort igjen totalt (52 - 5 kjente).</p>
+                <p>Sjansen for å IKKE treffe på Turn: ${nonOuts}/${unknownCardsTotal}</p>
+                <p>Sjansen for å IKKE treffe på River (gitt at du ikke traff på Turn): ${nonOuts - 1}/${unknownCardsTotal - 1}</p>
+                <p>Sjansen for å IKKE treffe på verken Turn eller River: (${nonOuts}/${unknownCardsTotal}) * (${nonOuts - 1}/${unknownCardsTotal - 1}) ≈ ${probMissBoth.toFixed(4)}</p>
+                <p>Sjansen for å treffe (minst ett av dine outs) = 1 - P(Ikke treffe) = 1 - ${probMissBoth.toFixed(4)} ≈ ${formatPercentage(probHitFlush)}</p>
+            `);
+
+             // Alternative Calculation using combinations (for comparison/understanding)
+             const totalCombosTurnRiver = combinations(unknownCardsTotal, 2); // C(47, 2) = 1081
+             const combosHit1 = combinations(outs, 1) * combinations(nonOuts, 1); // C(9,1)*C(38,1) = 9 * 38 = 342
+             const combosHit2 = combinations(outs, 2) * combinations(nonOuts, 0); // C(9,2)*C(38,0) = 36 * 1 = 36
+             const totalHitCombos = combosHit1 + combosHit2; // 342 + 36 = 378
+             const probHitFlushCombo = totalHitCombos / totalCombosTurnRiver; // 378 / 1081 ≈ 0.34967
+              explanations.push(`
+                <p><em>Alternativ beregning (kombinatorikk):</em><br>
+                Totalt antall måter Turn/River kan komme: C(47, 2) = ${totalCombosTurnRiver}.<br>
+                Måter å få 1 out og 1 non-out: C(${outs}, 1) * C(${nonOuts}, 1) = ${combosHit1}.<br>
+                Måter å få 2 outs: C(${outs}, 2) * C(${nonOuts}, 0) = ${combosHit2}.<br>
+                Totalt gunstige utfall: ${totalHitCombos}.<br>
+                Sannsynlighet = ${totalHitCombos} / ${totalCombosTurnRiver} ≈ ${formatPercentage(probHitFlushCombo)}.</p>
+            `);
+
+        } else {
+             explanations.push(`
+                <p>Du har ikke et flush draw (4 kort i samme farge) etter floppen.</p>
+             `);
+        }
+
+        // TODO: Add more post-flop calculations (straight draw, set mining odds etc.)
+
+        return { probabilities: results, explanationHTML: explanations.join('') };
+    }
+
+    // --- Event Handlers ---
+    document.getElementById('calculate-preflop').addEventListener('click', () => {
+        const holeCards = getSelectedCards(); // Gets first two cards
+         if (holeCards.length !== 2) {
+             document.getElementById('status-message').textContent = 'Velg nøyaktig to hole cards.';
+             return;
+         }
+        if (!validateUniqueCards(holeCards)) return;
+
+        const { probabilities, explanationHTML } = calculatePreflop(holeCards[0], holeCards[1]);
+
+        const probDiv = document.getElementById('preflop-probabilities');
+        probDiv.innerHTML = ''; // Clear previous
+        if (probabilities.flush !== undefined) {
+            probDiv.innerHTML += `<p>Sjanse for Flush ved River: <strong>${formatPercentage(probabilities.flush)}</strong></p>`;
+        } else {
+             probDiv.innerHTML = '<p>Ingen spesifikke pre-flop sannsynligheter beregnet for denne kombinasjonen ennå (kun flush for suited).</p>';
+        }
+        // Add more results here as you implement them
+
+        document.getElementById('preflop-explanation').innerHTML = explanationHTML;
+        document.getElementById('preflop-results').classList.remove('hidden');
+        document.getElementById('flop-selector').classList.remove('hidden');
+        document.getElementById('postflop-results').classList.add('hidden'); // Hide post-flop results until calculated
+    });
+
+    document.getElementById('calculate-postflop').addEventListener('click', () => {
+        const allCards = getSelectedCards(); // Gets hole cards + flop
+        if (allCards.length !== 5) {
+             document.getElementById('status-message').textContent = 'Velg nøyaktig to hole cards og tre flop-kort.';
+             return;
+         }
+        if (!validateUniqueCards(allCards)) return;
+
+        const holeCards = allCards.slice(0, 2);
+        const flopCards = allCards.slice(2, 5);
+
+        const { probabilities, explanationHTML } = calculatePostflop(holeCards, flopCards);
+
+        const probDiv = document.getElementById('postflop-probabilities');
+        probDiv.innerHTML = ''; // Clear previous
+        if (probabilities.flush !== undefined) {
+             probDiv.innerHTML += `<p>Sjanse for Flush ved River: <strong>${formatPercentage(probabilities.flush)}</strong></p>`;
+        } else {
+             probDiv.innerHTML = '<p>Ingen spesifikke post-flop sannsynligheter beregnet for denne situasjonen ennå (kun flush draw).</p>';
+        }
+        // Add more results here
+
+        document.getElementById('postflop-explanation').innerHTML = explanationHTML;
+        document.getElementById('postflop-results').classList.remove('hidden');
+    });
+
+
+    // --- Initialization ---
+    function initialize() {
+        // Populate rank dropdowns
+        ['rank1', 'rank2', 'rankF1', 'rankF2', 'rankF3'].forEach(id => {
+            populateSelect(id, ranks);
+        });
+        // Populate suit dropdowns
+        ['suit1', 'suit2', 'suitF1', 'suitF2', 'suitF3'].forEach(id => {
+            populateSelect(id, suitChars, suits);
+        });
+
+        // Set initial default different cards to avoid immediate error message
+        document.getElementById('rank1').value = 'A';
+        document.getElementById('suit1').value = 's';
+        document.getElementById('rank2').value = 'K';
+        document.getElementById('suit2').value = 'h';
+
+        document.getElementById('rankF1').value = 'Q';
+        document.getElementById('suitF1').value = 'd';
+        document.getElementById('rankF2').value = 'J';
+        document.getElementById('suitF2').value = 'c';
+        document.getElementById('rankF3').value = 'T';
+        document.getElementById('suitF3').value = 's';
+
+    }
+
+    initialize(); // Run initialization when script loads
+
+</script>
+
+</body>
+</html>
