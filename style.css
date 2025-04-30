@@ -1,3 +1,5 @@
+/* Legg til/endre disse i din eksisterende style.css */
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
@@ -11,16 +13,25 @@ body {
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 900px;
+    max-width: 1000px; /* Juster bredde etter behov */
     margin: 20px auto;
 }
 
-h1, h2 {
+h1, h2, h3 {
     color: #1d3557; /* Dark blue */
-    border-bottom: 2px solid #a8dadc; /* Light blue accent */
-    padding-bottom: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
+h2 {
+     border-bottom: 2px solid #a8dadc; /* Light blue accent */
+     padding-bottom: 8px;
+}
+h3 {
+    font-size: 1.1em;
+    color: #457b9d; /* Medium blue */
+    margin-top: 10px;
+    text-align: center;
+}
+
 
 .status {
     background-color: #fff3cd; /* Light yellow */
@@ -30,14 +41,30 @@ h1, h2 {
     border-radius: 5px;
     margin-bottom: 20px;
     text-align: center;
+    font-weight: bold;
 }
 
-.controls, .community-controls {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px; /* Space between buttons */
-    flex-wrap: wrap;
+.status.calculating {
+     background-color: #d1ecf1; /* Light blue */
+     color: #0c5460; /* Dark blue */
+     border-color: #bee5eb;
+ }
+
+.main-controls {
+     margin-bottom: 25px;
+     display: flex;
+     gap: 10px;
+     flex-wrap: wrap;
+ }
+
+.section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 20px; /* Add margin between sections */
 }
+
 
 button {
     padding: 10px 18px;
@@ -48,37 +75,74 @@ button {
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.2s ease, transform 0.1s ease;
+    margin-top: 10px; /* Add some space above buttons */
+}
+button:disabled {
+    background-color: #adb5bd; /* Grey when disabled */
+    cursor: not-allowed;
 }
 
-button:hover {
+
+button:hover:not(:disabled) {
     background-color: #1d3557; /* Darker blue */
 }
-button:active {
+button:active:not(:disabled) {
      transform: scale(0.98);
 }
 
-
 .game-area {
     display: flex;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    gap: 30px;
-    margin-bottom: 20px;
+    flex-direction: column; /* Stack sections vertically */
+    gap: 20px;
 }
 
 .player-area, .community-area {
-    flex: 1; /* Allow flexible sizing */
-    min-width: 300px; /* Minimum width before wrapping */
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
+     /* Styles defined in .section now */
 }
 
 .card-selection {
     display: flex;
-    gap: 10px;
+    gap: 15px; /* Increased gap */
+    flex-wrap: wrap;
+    justify-content: center; /* Center cards */
     margin-bottom: 15px;
-    flex-wrap: wrap; /* Wrap cards if needed */
+}
+
+.community-cards-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-around; /* Distribute stages */
+    align-items: flex-start; /* Align tops */
+}
+
+.card-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px dashed #ced4da;
+    border-radius: 5px;
+    min-width: 180px; /* Ensure minimum width for flop stage */
+}
+/* Adjust flop stage to hold 3 cards */
+.card-stage:first-child {
+    flex-direction: row;
+    flex-wrap: wrap;
+     justify-content: center;
+     min-width: 280px; /* Wider for 3 cards */
+}
+.card-stage:first-child h3 {
+    width: 100%; /* Make Flop title span across */
+    margin-bottom: 5px;
+}
+
+
+.card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .card-placeholder {
@@ -87,35 +151,28 @@ button:active {
     width: 70px;
     height: 100px;
     display: flex;
-    flex-direction: column; /* Stack text and select */
     align-items: center;
     justify-content: center;
     font-size: 0.9em;
     color: #6c757d;
     background-color: #e9ecef;
     text-align: center;
-    position: relative; /* For positioning selects if needed */
-    overflow: hidden; /* Hide selects initially */
+    margin-bottom: 5px; /* Space between card and selects */
 }
 
-.card-placeholder .card-text {
-     margin-bottom: 5px;
-}
-
-.card-placeholder select {
+.manual-input select {
     font-size: 0.8em;
-    padding: 2px;
+    padding: 3px;
     margin: 1px;
-    max-width: 90%; /* Fit inside placeholder */
     border: 1px solid #ccc;
     border-radius: 3px;
+    max-width: 80px;
 }
-.card-placeholder select:focus {
+.manual-input select:focus {
     outline: 1px solid #457b9d;
 }
 
-
-/* Style for cards once dealt */
+/* Style for cards once dealt/selected */
 .card {
     border: 1px solid #adb5bd;
     background-color: white;
@@ -129,6 +186,7 @@ button:active {
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 5px; /* Consistent margin */
 }
 
 .card.red {
@@ -136,18 +194,27 @@ button:active {
 }
 
 .confirm-button, .deal-button {
-    margin-top: 10px;
-    display: block; /* Make button take full width */
-    width: calc(100% - 0px); /* Adjust width as needed */
+    display: block;
+    width: 100%; /* Make buttons fill container width */
+    max-width: 250px; /* Optional: limit max width */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .results-area {
-    background-color: #e9ecef;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #ced4da;
-    margin-top: 20px;
+    /* Defined in .section */
 }
+.current-hand {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #1d3557;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    text-align: center;
+}
+
 
 #probabilities table {
     width: 100%;
@@ -189,5 +256,5 @@ button:active {
 }
 
 .hidden {
-    display: none !important; /* Use important to override potential conflicts */
+    display: none !important;
 }
