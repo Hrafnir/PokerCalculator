@@ -1,0 +1,193 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    padding: 15px;
+    background-color: #f0f2f5;
+    color: #333;
+}
+
+.container {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+h1, h2 {
+    color: #1d3557; /* Dark blue */
+    border-bottom: 2px solid #a8dadc; /* Light blue accent */
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+.status {
+    background-color: #fff3cd; /* Light yellow */
+    color: #856404; /* Dark yellow text */
+    padding: 10px 15px;
+    border: 1px solid #ffeeba;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.controls, .community-controls {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 5px;
+    background-color: #457b9d; /* Medium blue */
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+    background-color: #1d3557; /* Darker blue */
+}
+button:active {
+     transform: scale(0.98);
+}
+
+
+.game-area {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.player-area, .community-area {
+    flex: 1; /* Allow flexible sizing */
+    min-width: 300px; /* Minimum width before wrapping */
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.card-selection {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap; /* Wrap cards if needed */
+}
+
+.card-placeholder {
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    width: 70px;
+    height: 100px;
+    display: flex;
+    flex-direction: column; /* Stack text and select */
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    color: #6c757d;
+    background-color: #e9ecef;
+    text-align: center;
+    position: relative; /* For positioning selects if needed */
+    overflow: hidden; /* Hide selects initially */
+}
+
+.card-placeholder .card-text {
+     margin-bottom: 5px;
+}
+
+.card-placeholder select {
+    font-size: 0.8em;
+    padding: 2px;
+    margin: 1px;
+    max-width: 90%; /* Fit inside placeholder */
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+.card-placeholder select:focus {
+    outline: 1px solid #457b9d;
+}
+
+
+/* Style for cards once dealt */
+.card {
+    border: 1px solid #adb5bd;
+    background-color: white;
+    color: black; /* Default to black */
+    font-size: 1.8em; /* Larger font for rank/suit */
+    font-weight: bold;
+    width: 70px;
+    height: 100px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card.red {
+    color: #e63946; /* Red color for Hearts and Diamonds */
+}
+
+.confirm-button, .deal-button {
+    margin-top: 10px;
+    display: block; /* Make button take full width */
+    width: calc(100% - 0px); /* Adjust width as needed */
+}
+
+.results-area {
+    background-color: #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    margin-top: 20px;
+}
+
+#probabilities table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+#probabilities th, #probabilities td {
+    border: 1px solid #adb5bd;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+#probabilities th {
+    background-color: #dee2e6;
+    color: #495057;
+}
+
+#probabilities tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+#probabilities td:nth-child(2), #probabilities td:nth-child(3) {
+     text-align: right;
+     font-family: monospace; /* Better for aligning numbers */
+ }
+
+
+#explanation {
+    margin-top: 15px;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    font-size: 0.9em;
+    white-space: pre-wrap; /* Preserve formatting */
+    max-height: 200px; /* Limit height */
+    overflow-y: auto;  /* Add scroll if needed */
+}
+
+.hidden {
+    display: none !important; /* Use important to override potential conflicts */
+}
